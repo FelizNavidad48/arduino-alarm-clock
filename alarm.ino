@@ -4,14 +4,16 @@
 //#include<stdio.h>
 int soundPin = 3;
 int potPin = A0;
+int setAlarmPin = A1;
 int firstTime = 0;
 int currentTime;
-unsigned long startMillis;
+int alarmTime = 9000;
 unsigned long minuteCounter;
 SevSeg sevseg; //Instantiate a seven segment object
 void setup() {
   pinMode(soundPin, OUTPUT);
   pinMode(potPin, INPUT);
+  pinMode(setAlarmPin, INPUT);
   pinMode(1, OUTPUT);
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
@@ -42,15 +44,12 @@ void setup() {
 }
 
 void loop() {
- //tone(soundPin, 659, 1000);
  
- //playSong(); 
- //sevseg.blank();
- //playSong();
+ //Set the innitial time
  if(firstTime==0){
-  startMillis = millis();
+  unsigned long startMillis = millis();
   minuteCounter = millis();
-  while(millis()-startMillis <= 5000){
+  while(millis()-startMillis <= 10000){
     int value = analogRead(potPin);          //Read and save analog value from potentiometer
     value = map(value, 0, 1023, 0, 1440); //Map value 0-1023 to 0-255 (PWM)
     int startingTime = (int) value/60*100 + value%60;
@@ -60,6 +59,21 @@ void loop() {
   firstTime = 1;
    }
   }
+
+//If button is pressed then set alarm
+  if(digitalRead(setAlarmPin) == HIGH){
+
+    unsigned long startMillis = millis();
+    while(millis()-startMillis <= 10000){
+      int value = analogRead(potPin);          //Read and save analog value from potentiometer
+      value = map(value, 0, 1023, 0, 1440); //Map value 0-1023 to 0-255 (PWM)
+      alarmTime = (int) value/60*100 + value%60;
+      sevseg.setNumber(alarmTime,2);
+      sevseg.refreshDisplay();
+      }
+    }
+
+//Update the display and count the time
   if(millis() - minuteCounter >= 60000){
     minuteCounter = millis();
     if ((currentTime+1)%100 >=60){
@@ -80,21 +94,24 @@ void loop() {
    }
   sevseg.setNumber(currentTime, 2);
   sevseg.refreshDisplay();
+
+//Check if its time for alarm
   if(alarm() == 1){
       playSong();
     }
 }
+
+
+
+
+
 int alarm(){
-    if(currentTime==1000){
+    if(currentTime==alarmTime){
         return 1;
       }
       else{
           return 0;
         }
-  }
-void setDisplay(){
- 
-
   }
 
 void speaker(){
