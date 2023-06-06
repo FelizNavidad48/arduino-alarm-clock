@@ -5,15 +5,17 @@
 int soundPin = 3;
 int potPin = A0;
 int setAlarmPin = A1;
+int resetPin = A2;
 int firstTime = 0;
 int currentTime;
-int alarmTime = 9000;
+int alarmTime = 1000;
 unsigned long minuteCounter;
 SevSeg sevseg; //Instantiate a seven segment object
 void setup() {
   pinMode(soundPin, OUTPUT);
   pinMode(potPin, INPUT);
-  pinMode(setAlarmPin, INPUT);
+  pinMode(setAlarmPin, INPUT_PULLUP);
+  pinMode(resetPin, INPUT_PULLUP);
   pinMode(1, OUTPUT);
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
@@ -61,7 +63,7 @@ void loop() {
   }
 
 //If button is pressed then set alarm
-  if(digitalRead(setAlarmPin) == HIGH){
+  if(digitalRead(setAlarmPin) == LOW){
 
     unsigned long startMillis = millis();
     while(millis()-startMillis <= 10000){
@@ -71,7 +73,15 @@ void loop() {
       sevseg.setNumber(alarmTime,2);
       sevseg.refreshDisplay();
       }
+  }
+
+
+  //reset alarm and set time again
+  if(digitalRead(resetPin) == LOW){
+      firstTime = 0;
+      alarmTime = -1;
     }
+    
 
 //Update the display and count the time
   if(millis() - minuteCounter >= 60000){
